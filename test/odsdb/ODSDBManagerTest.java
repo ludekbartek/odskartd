@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.swing.event.TableModelListener;
 import org.jopendocument.dom.spreadsheet.SpreadSheet;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import odsdb.entities.Medium;
 import org.jopendocument.dom.ODPackage;
@@ -38,6 +39,14 @@ public class ODSDBManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        String[][] data={{"1","a","b"}};
+        String[][] nodata={{"","",""}};
+        String[] names={"id","Film 1", "Film 2"};
+        TableModel model =new DefaultTableModel(data, names);
+        TableModel emptyModel = new DefaultTableModel(nodata,names);
+        SpreadSheet.createEmpty(model).saveAs(new File("test.ods"));
+        SpreadSheet.createEmpty(emptyModel).saveAs(new File("empty.ods"));
+        
     }
 
     @AfterClass
@@ -46,6 +55,28 @@ public class ODSDBManagerTest {
     
     @Before
     public void setUp() throws IOException {
+        String[][] data={{"1","a","b"}};
+        String[] nonames={"","",""};
+        String[][] nodata={{"","",""}};
+        String[] names={"id","Film 1", "Film 2"};
+        TableModel model =new DefaultTableModel(nodata, nonames);
+        SpreadSheet file1 = SpreadSheet.createEmpty(model);
+        
+        file1.addSheet(0,"a");
+        Sheet sheetA = file1.getSheet("a");
+        Sheet sheetB = file1.getSheet(1);
+        sheetB.setName("b");
+        sheetA.setColumnCount(3);
+        sheetA.setRowCount(2);
+        for(int i=0;i<names.length;i++){
+            sheetA.setValueAt(names[i], i, 0);
+        }
+        file1.saveAs(new File("empty.ods"));
+        for(int i=0;i<data[0].length;i++){
+            sheetA.setValueAt(data[0][i], i, 1);
+        }
+        file1.saveAs(new File("test.ods"));
+                
     }
     
     @After
@@ -70,8 +101,8 @@ public class ODSDBManagerTest {
         
         List<Medium> expResult = new ArrayList<Medium>();
         Medium medium = new MediumImpl();
-        medium.addTitle("pokus1");
-        medium.addTitle("pokus2");
+        medium.addTitle("a");
+        medium.addTitle("b");
         expResult.add(medium);
         List<Medium> result = instance.getMedia("a");
         assertEquals(expResult, result);
@@ -127,7 +158,7 @@ public class ODSDBManagerTest {
         Medium data = new MediumImpl();
         data.addTitle("test1");
         data.addTitle("test2");
-        DBManager instance = new ODSDBManager("test.ods");
+        DBManager instance = new ODSDBManager("empty.ods");
         instance.addMedium("a", data);
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
