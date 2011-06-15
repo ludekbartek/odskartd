@@ -67,4 +67,10 @@ public class MediumImpl implements Medium {
         return hash;
     }
     
+    @Override
+    public String toString()
+    {
+        return "("+titles+")";
+    }
+    
 }
