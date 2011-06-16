@@ -186,6 +186,7 @@ public class ODSDBManagerTest {
         instance.addMedium("b", data);
         expResult.add(data);
         List<Medium> result = instance.getMedia("b");
+        System.out.println("result:"+result+"\n data:"+data);
         assertTrue(result.contains(data));
         
         // TODO review the generated test code and remove the default call to fail.
