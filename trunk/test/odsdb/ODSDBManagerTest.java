@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 public class ODSDBManagerTest {
     
     private SpreadSheet database;
+    private List<Medium> expResultAll = new ArrayList<Medium>();
     
     public ODSDBManagerTest() {
     }
@@ -62,21 +63,49 @@ public class ODSDBManagerTest {
         TableModel model =new DefaultTableModel(nodata, nonames);
         SpreadSheet file1 = SpreadSheet.createEmpty(model);
         
-        file1.addSheet(0,"a");
-        Sheet sheetA = file1.getSheet("a");
-        Sheet sheetB = file1.getSheet(1);
+        /*file1.addSheet(0,"a");
+        Sheet sheetA = file1.getSheet("a");*/
+        Sheet sheetB = file1.getSheet(0);
         sheetB.setName("b");
-        sheetA.setColumnCount(3);
-        sheetA.setRowCount(2);
+        sheetB.setColumnCount(3);
+        sheetB.setRowCount(2);
+        Medium medium = new MediumImpl();
         for(int i=0;i<names.length;i++){
-            sheetA.setValueAt(names[i], i, 0);
+            sheetB.setValueAt(names[i], i, 0);
+            
         }
         file1.saveAs(new File("empty.ods"));
         for(int i=0;i<data[0].length;i++){
-            sheetA.setValueAt(data[0][i], i, 1);
+            sheetB.setValueAt(names[i],i,0);
+            if(i>0)
+                sheetB.setValueAt("b" + data[0][i], i, 1);
+            else 
+                sheetB.setValueAt(data[0][i],i,1);
+            if(i>0)
+                medium.addTitle("b" + data[0][i]);
         }
+        expResultAll.add(medium);
+        
+        medium = new MediumImpl();
+        
         file1.saveAs(new File("test.ods"));
-                
+        Sheet sheetC = file1.addSheet(1,"c");
+        sheetC.setName("c");
+        sheetC.setColumnCount(3);
+        sheetC.setRowCount(2);
+        for(int i=0 ; i<sheetC.getColumnCount() ; i++){
+            sheetC.setValueAt(names[i], i, 0);
+            if(i>0)
+                sheetC.setValueAt("c" + data[0][i], i, 1);
+            else
+                sheetC.setValueAt(data[0][i],i,1);
+            if(i>0)
+                medium.addTitle("c" + data[0][i]);
+        }
+        expResultAll.add(medium);
+        file1.saveAs(new File("long.ods"));
+        
+        
     }
     
     @After
@@ -89,7 +118,7 @@ public class ODSDBManagerTest {
     @Test()
     public void testGetMedia() {
         System.out.println("getMedia");
-        String type = "";
+        String type = "b";
         DBManager instance=null;
         try {
             instance = new ODSDBManager("test.ods");
@@ -101,10 +130,10 @@ public class ODSDBManagerTest {
         
         List<Medium> expResult = new ArrayList<Medium>();
         Medium medium = new MediumImpl();
-        medium.addTitle("a");
-        medium.addTitle("b");
+        medium.addTitle("ba");
+        medium.addTitle("bb");
         expResult.add(medium);
-        List<Medium> result = instance.getMedia("a");
+        List<Medium> result = instance.getMedia(type);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
        // fail("The test case is a prototype.");
@@ -116,18 +145,9 @@ public class ODSDBManagerTest {
     @Test
     public void testGetAllMedia() throws ODSKartException, FileNotFoundException {
         System.out.println("getAllMedia");
-        DBManager instance = new ODSDBManager("test.ods");
-        List<Medium> expResult = new ArrayList<Medium>();
-        Medium med1 = new MediumImpl();
-        Medium med2 = new MediumImpl();
-        med1.addTitle("pokus1");
-        med1.addTitle("pokus2");
-        med2.addTitle("pokus3");
-        med2.addTitle("pokus4");
-        expResult.add(med1);
-        expResult.add(med2);
+        DBManager instance = new ODSDBManager("long.ods");
         List<Medium> result = instance.getAllMedia();
-        assertEquals(expResult, result);
+        assertEquals(expResultAll, result);
         // TODO review the generated test code and remove the default call to fail.
        // fail("The test case is a prototype.");
     }
@@ -140,10 +160,13 @@ public class ODSDBManagerTest {
         System.out.println("getMediaTypes");
         DBManager instance = new ODSDBManager("test.ods");
         List<String> expResult = new ArrayList<String>();
-        expResult.add("a");
         expResult.add("b");
         List<String> result = instance.getMediaTypes();
         assertEquals(expResult, result);
+        instance = new ODSDBManager("long.ods");
+        expResult.add("c");
+        result = instance.getMediaTypes();
+        assertEquals(expResult,result);
         // TODO review the generated test code and remove the default call to fail.
       //  fail("The test case is a prototype.");
     }
@@ -159,7 +182,12 @@ public class ODSDBManagerTest {
         data.addTitle("test1");
         data.addTitle("test2");
         DBManager instance = new ODSDBManager("empty.ods");
-        instance.addMedium("a", data);
+        List<Medium> expResult = instance.getMedia("b");
+        instance.addMedium("b", data);
+        expResult.add(data);
+        List<Medium> result = instance.getMedia("b");
+        assertTrue(result.contains(data));
+        
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
     }
