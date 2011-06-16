@@ -34,6 +34,10 @@ public class ODSDBManagerTest {
     
     private SpreadSheet database;
     private List<Medium> expResultAll = new ArrayList<Medium>();
+    private String[][] data={{"1","a","b"}};
+    private String[] nonames={"","",""};
+    private String[][] nodata={{"","",""}};
+    private String[] names={"id","Film 1", "Film 2"};
     
     public ODSDBManagerTest() {
     }
@@ -56,10 +60,7 @@ public class ODSDBManagerTest {
     
     @Before
     public void setUp() throws IOException {
-        String[][] data={{"1","a","b"}};
-        String[] nonames={"","",""};
-        String[][] nodata={{"","",""}};
-        String[] names={"id","Film 1", "Film 2"};
+        
         TableModel model =new DefaultTableModel(nodata, nonames);
         SpreadSheet file1 = SpreadSheet.createEmpty(model);
         
@@ -104,6 +105,7 @@ public class ODSDBManagerTest {
         }
         expResultAll.add(medium);
         file1.saveAs(new File("long.ods"));
+        database = file1;
         
         
     }
@@ -178,16 +180,16 @@ public class ODSDBManagerTest {
     public void testAddMedium() throws Exception {
         System.out.println("addMedium");
         String type = "";
-        Medium data = new MediumImpl();
-        data.addTitle("test1");
-        data.addTitle("test2");
+        Medium pomData = new MediumImpl();
+        pomData.addTitle("test1");
+        pomData.addTitle("test2");
         DBManager instance = new ODSDBManager("empty.ods");
         List<Medium> expResult = instance.getMedia("b");
-        instance.addMedium("b", data);
-        expResult.add(data);
+        instance.addMedium("b", pomData);
+        expResult.add(pomData);
         List<Medium> result = instance.getMedia("b");
-        System.out.println("result:"+result+"\n data:"+data);
-        assertTrue(result.contains(data));
+        System.out.println("result:"+result+"\n data:"+pomData);
+        assertTrue(result.contains(pomData));
         
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
@@ -197,16 +199,23 @@ public class ODSDBManagerTest {
      * Test of getMediumByTitle method, of class ODSDBManager.
      */
     @Test
-    public void testGetMediumByTitle_Sheet_String() {
+    public void testGetMediumByTitle_Sheet_String()throws Exception {
         System.out.println("getMediumByTitle");
-        Sheet sheet = null;
-        String title = "";
-        ODSDBManager instance = null;
-        List expResult = null;
-        List result = instance.getMediumByTitle(sheet, title);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        String title = "a";
+        DBManager instance = new ODSDBManager("long.ods");
+        Sheet sheet = database.getSheet("c");
+        List<Medium> result = instance.getMediumByTitle(sheet, title);
+        
+        for(Medium medium:result){
+            for(String value:data[0]){
+                assertTrue(medium.getTitles().contains(value));
+                
+            }
+            assertFalse(medium.getTitles().contains("c"));
+        }
+        
+//        fail("The test case is a prototype.");
     }
 
     /**
