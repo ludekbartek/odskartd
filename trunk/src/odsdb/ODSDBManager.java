@@ -95,7 +95,7 @@ public class ODSDBManager implements DBManager {
         Sheet sheet = getSheet(type);
         if(sheet!=null){
             sheet.setRowCount(sheet.getRowCount()+1);
-            sheet.setValueAt(sheet.getColumnCount(), sheet.getRowCount()-1, 0);
+            sheet.setValueAt(sheet.getColumnCount(), 0, sheet.getRowCount()-1);
             int column = 1;
             int row = sheet.getRowCount()-1;
             for(String title:data.getTitles()){
