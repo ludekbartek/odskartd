@@ -61,8 +61,10 @@ public class ODSDBManager implements DBManager {
     public List<Medium> getAllMedia() {
         Sheet sheet;
         List<Medium> mediaList = new ArrayList<Medium>();
-        for(int i=0;i<database.getSheetCount();i++){
+        int sheetCount = database.getSheetCount();
+        for(int i=0;i<sheetCount;i++){
             sheet = database.getSheet(i);
+            System.out.println(sheet.getName());
             mediaList.addAll(getMedia(sheet.getName()));
         }    
         return mediaList;
