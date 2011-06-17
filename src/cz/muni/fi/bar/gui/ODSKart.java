@@ -10,14 +10,20 @@
  */
 package cz.muni.fi.bar.gui;
 
+import cz.muni.fi.bar.odsdb.DBManager;
+import javax.swing.ComboBoxModel;
+
 /**
  *
  * @author bar
  */
 public class ODSKart extends javax.swing.JFrame {
 
+    private DBManager manager;
+    private ComboBoxModel comboBoxModel1;
     /** Creates new form ODSKart */
     public ODSKart() {
+        comboBoxModel1 = (ComboBoxModel) new TypeComboBoxModel();
         initComponents();
     }
 
@@ -74,7 +80,7 @@ public class ODSKart extends javax.swing.JFrame {
         jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(jButton2);
 
-        jComboBox1.setModel(new TypeComboBoxModel);
+        jComboBox1.setModel(comboBoxModel1);
         jComboBox1.setSize(new java.awt.Dimension(10, 0));
         jToolBar1.add(jComboBox1);
 
