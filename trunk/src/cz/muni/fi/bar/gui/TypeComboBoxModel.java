@@ -9,19 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListDataListener;
 
 /**
  *
  * @author bar
  */
-class TypeComboBoxModel extends AbstractListModel{
+class TypeComboBoxModel extends DefaultComboBoxModel{
 
     private List<String> types = new ArrayList<String>();
     private DBManager manager;
+    private Object selecteItem;
 
     public TypeComboBoxModel() {
-        
+       
     }
 
     public void setDBManager(DBManager manager){
@@ -37,5 +39,4 @@ class TypeComboBoxModel extends AbstractListModel{
     public Object getElementAt(int i) {
         return types.get(i);
     }
-
 }
