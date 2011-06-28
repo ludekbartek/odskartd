@@ -11,7 +11,23 @@
 package cz.muni.fi.bar.gui;
 
 import cz.muni.fi.bar.odsdb.DBManager;
+import cz.muni.fi.bar.odsdb.ODSDBManager;
+import cz.muni.fi.bar.odsdb.ODSKartException;
+import cz.muni.fi.bar.odsdb.entities.Medium;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.ListModel;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -19,12 +35,89 @@ import javax.swing.ComboBoxModel;
  */
 public class ODSKart extends javax.swing.JFrame {
 
+    private class OpenAction extends AbstractAction {
+
+        private JFrame parent; 
+        public OpenAction(JFrame frame) {
+            this.parent = frame;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if(manager!=null)manager.store();
+            if(jFileChooser1.showOpenDialog(parent)==JFileChooser.APPROVE_OPTION){
+                try {
+                    manager = new ODSDBManager(jFileChooser1.getSelectedFile().getAbsolutePath());
+                } catch (ODSKartException ex) {
+                    Logger.getLogger(ODSKart.class.getName()).log(Level.SEVERE, null, ex);
+                    manager = null;
+                } catch (FileNotFoundException ex) {
+                    manager = null;
+                }
+            }
+        }
+
+    }
+
+    private class ODSKartTableModel extends AbstractTableModel {
+
+        private DBManager dataManager = null; 
+        private String type = null;
+        public ODSKartTableModel() {
+        }
+        
+        public void setType(String type){
+            this.type = type;
+        }
+
+        public void setDataManage(DBManager dbManager)
+        {
+            this.dataManager = dbManager;
+        }
+        
+        @Override
+        public int getRowCount() {
+            return dataManager==null?0:dataManager.getAllMedia().size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return dataManager == null?0:dataManager.getMaxTitlesCount();
+        }
+
+        @Override
+        public Object getValueAt(int i, int i1) {
+            if(dataManager==null)return "";
+            if(type == null)return "";
+            List<Medium> media = dataManager.getMedia(type);
+            try {
+                return media.get(i).getTitle(i1);
+            } catch (ODSKartException ex) {
+                Logger.getLogger(ODSKart.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return "";
+        }
+    }
+    
+    private class ExitAction extends AbstractAction{
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if(manager!=null)manager.store();
+            System.exit(0);
+        }
+        
+    }
+
     private DBManager manager;
     private ComboBoxModel comboBoxModel1;
+    private ODSKartTableModel videotekModel;
     /** Creates new form ODSKart */
     public ODSKart() {
         comboBoxModel1 = (ComboBoxModel) new TypeComboBoxModel();
+        videotekModel = new ODSKartTableModel();
         initComponents();
+        jTable1.setModel(videotekModel);
     }
 
     /** This method is called from within the constructor to
@@ -36,6 +129,7 @@ public class ODSKart extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jFileChooser1 = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jToolBar1 = new javax.swing.JToolBar();
@@ -75,6 +169,7 @@ public class ODSKart extends javax.swing.JFrame {
         jToolBar1.add(jButton1);
 
         jButton2.setText("Uložit");
+        jButton2.setEnabled(false);
         jButton2.setFocusable(false);
         jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -86,12 +181,15 @@ public class ODSKart extends javax.swing.JFrame {
 
         jMenu1.setText("Kartotéka");
 
+        jMenuItem3.setAction(new OpenAction(this));
         jMenuItem3.setText("Otevřít");
         jMenu1.add(jMenuItem3);
 
         jMenuItem1.setText("Uložit");
+        jMenuItem1.setEnabled(false);
         jMenu1.add(jMenuItem1);
 
+        jMenuItem2.setAction(new ExitAction());
         jMenuItem2.setText("Konec");
         jMenu1.add(jMenuItem2);
 
@@ -142,6 +240,7 @@ public class ODSKart extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
