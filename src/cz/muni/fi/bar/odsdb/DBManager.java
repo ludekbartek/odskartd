@@ -19,4 +19,8 @@ public interface DBManager {
     List<Medium> getMediumByTitle(Sheet sheet, String title);
     List<String> getMediaTypes();
     void addMedium(String type,Medium data)throws ODSKartException;
+
+    public int getMaxTitlesCount();
+
+    public void store();
 }
