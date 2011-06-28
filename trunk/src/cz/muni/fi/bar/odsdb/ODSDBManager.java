@@ -151,4 +151,27 @@ public class ODSDBManager implements DBManager {
         return mediaList;
     }
 
+    @Override
+    public int getMaxTitlesCount() {
+        int maxCount = 0;
+        
+        for(Medium medium:getAllMedia()){
+            int count = medium.getTitles().size();
+            if(count>maxCount)maxCount=count;
+        }
+        
+        return maxCount;
+    }
+
+    @Override
+    public void store() {
+        try {
+            database.saveAs(input);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }
