@@ -15,25 +15,37 @@ import cz.muni.fi.bar.odsdb.ODSDBManager;
 import cz.muni.fi.bar.odsdb.ODSKartException;
 import cz.muni.fi.bar.odsdb.entities.Medium;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.ListModel;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 
 /**
  *
  * @author bar
  */
 public class ODSKart extends javax.swing.JFrame {
+
+    private class ComboBoxAction extends AbstractAction {
+
+        public ComboBoxAction() {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ODSKartTableModel model = (ODSKartTableModel) jTable1.getModel();
+            String type = (String)jComboBox1.getSelectedItem();
+            videotekModel.setType(type);
+            videotekModel.reload();
+            System.err.println("Type:" + type);
+        }
+    }
 
     private class OpenAction extends AbstractAction {
 
@@ -54,6 +66,10 @@ public class ODSKart extends javax.swing.JFrame {
                 } catch (FileNotFoundException ex) {
                     manager = null;
                 }
+                ((TypeComboBoxModel)comboBoxModel1).setDBManager(manager);
+                videotekModel.setDataManager(manager);
+                jMenuItem1.setEnabled(true);
+                videotekModel.reload();
             }
         }
 
@@ -63,6 +79,7 @@ public class ODSKart extends javax.swing.JFrame {
 
         private DBManager dataManager = null; 
         private String type = null;
+        private List<Medium> media = new ArrayList<Medium>();
         public ODSKartTableModel() {
         }
         
@@ -70,32 +87,67 @@ public class ODSKart extends javax.swing.JFrame {
             this.type = type;
         }
 
-        public void setDataManage(DBManager dbManager)
+        public void setDataManager(DBManager dbManager)
         {
             this.dataManager = dbManager;
         }
         
         @Override
         public int getRowCount() {
-            return dataManager==null?0:dataManager.getAllMedia().size();
+            int rowCount = media.size();
+            System.err.println("Medii: " + rowCount);
+            return rowCount;
         }
 
         @Override
         public int getColumnCount() {
-            return dataManager == null?0:dataManager.getMaxTitlesCount();
+            int maxTitles =10;
+          /*  for(Medium medium:media){
+                int count = medium.getTitles().size();
+                if(maxTitles < count)maxTitles = count;
+            }*/
+            return maxTitles;
+            //return dataManager == null?0:dataManager.getMaxTitlesCount();
+        }
+        
+        @Override
+        public Class<?> getColumnClass(int column){
+            return String.class;
+        }
+        
+        @Override
+        public boolean isCellEditable(int row, int column){
+            return true;
         }
 
         @Override
-        public Object getValueAt(int i, int i1) {
-            if(dataManager==null)return "";
-            if(type == null)return "";
-            List<Medium> media = dataManager.getMedia(type);
-            try {
-                return media.get(i).getTitle(i1);
-            } catch (ODSKartException ex) {
-                Logger.getLogger(ODSKart.class.getName()).log(Level.SEVERE, null, ex);
+        public Object getValueAt(int row, int column) {
+            /*if(row == 0){
+                return "Titul" + column;
+            }*/
+            if(row>media.size())return "";
+            List<String> titles = media.get(row).getTitles();
+            if(column>titles.size())return "";
+            String title="";
+            try{
+             title = media.get(row).getTitle(column);
+            }catch(ODSKartException ex){
+                System.err.println(ex);
             }
-            return "";
+            return title;
+        }
+        
+        @Override
+        public String getColumnName(int column){
+            return "Film "+(column+1);
+        }
+
+        private void reload() {
+            if(type==null)
+                media = dataManager.getAllMedia();
+            else media = dataManager.getMedia(type);
+           // System.err.println("Media ("+type+"): " + media);
+            fireTableDataChanged();
         }
     }
     
@@ -130,12 +182,12 @@ public class ODSKart extends javax.swing.JFrame {
     private void initComponents() {
 
         jFileChooser1 = new javax.swing.JFileChooser();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jComboBox1 = new javax.swing.JComboBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -147,21 +199,9 @@ public class ODSKart extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(jTable1);
-
         jToolBar1.setRollover(true);
 
+        jButton1.setAction(new OpenAction(this));
         jButton1.setText("Otevřít");
         jButton1.setFocusable(false);
         jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -176,8 +216,11 @@ public class ODSKart extends javax.swing.JFrame {
         jToolBar1.add(jButton2);
 
         jComboBox1.setModel(comboBoxModel1);
-        jComboBox1.setSize(new java.awt.Dimension(10, 0));
+        jComboBox1.setAction(new ComboBoxAction());
         jToolBar1.add(jComboBox1);
+
+        jTable1.setModel(new ODSKartTableModel());
+        jScrollPane1.setViewportView(jTable1);
 
         jMenu1.setText("Kartotéka");
 
@@ -219,7 +262,7 @@ public class ODSKart extends javax.swing.JFrame {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 272, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 317, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -231,6 +274,7 @@ public class ODSKart extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 new ODSKart().setVisible(true);
             }
