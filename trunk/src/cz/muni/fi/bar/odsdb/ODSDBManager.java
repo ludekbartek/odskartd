@@ -48,7 +48,10 @@ public class ODSDBManager implements DBManager {
             if(type.equalsIgnoreCase(sheet.getName()))
             {
                 for(int row=1;row<sheet.getRowCount();row++){
-                    mediaList.add(getMedium(sheet,row));
+                    Medium medium = getMedium(sheet,row);
+                    if(medium!=null){
+                        mediaList.add(getMedium(sheet,row));
+                    }
                 }
             }
         }
@@ -84,10 +87,12 @@ public class ODSDBManager implements DBManager {
         for(int column=1;column<sheet.getColumnCount();column++){
             String header = sheet.getValueAt(column,0).toString();
             if(header.contains("Film")){
-                medium.addTitle(sheet.getValueAt(column,row).toString());
+                String title = sheet.getValueAt(column,row).toString();
+                if(title.length()>0)
+                    medium.addTitle(title);
             }
         }
-        return medium;
+        return (medium.getTitles().size()>0?medium:null);
     }
 
     @Override
@@ -159,7 +164,7 @@ public class ODSDBManager implements DBManager {
             int count = medium.getTitles().size();
             if(count>maxCount)maxCount=count;
         }
-        
+        System.err.println("Max Titles cout:" + maxCount);
         return maxCount;
     }
 
