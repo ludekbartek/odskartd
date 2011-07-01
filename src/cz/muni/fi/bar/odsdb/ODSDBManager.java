@@ -179,4 +179,11 @@ public class ODSDBManager implements DBManager {
         }
     }
 
+    @Override
+    public void replaceTitle(String type, int row, int column, String title) throws ODSKartException {
+        if(column<1)throw new ODSKartException("Title index must be 1 at least ");
+        Sheet sheet = getSheet(type);
+        sheet.setValueAt(title, row, column);
+    }
+
 }
