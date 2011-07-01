@@ -149,6 +149,17 @@ public class ODSKart extends javax.swing.JFrame {
            // System.err.println("Media ("+type+"): " + media);
             fireTableDataChanged();
         }
+        
+        @Override
+        public void setValueAt(Object value, int row, int column){
+            String title = (String)value;
+            //Medium medium = media.get(row);
+            try {
+                manager.replaceTitle(type,row,column+1, title);
+            } catch (ODSKartException ex) {
+                Logger.getLogger(ODSKart.class.getName()).log(Level.SEVERE, "Unable to set the title:", ex);
+            }
+        }
     }
     
     private class ExitAction extends AbstractAction{

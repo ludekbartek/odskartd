@@ -23,4 +23,6 @@ public interface DBManager {
     public int getMaxTitlesCount();
 
     public void store();
+
+    public void replaceTitle(String type, int row, int column, String title) throws ODSKartException;
 }

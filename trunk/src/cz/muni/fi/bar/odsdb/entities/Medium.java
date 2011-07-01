@@ -16,4 +16,5 @@ public interface Medium {
     void modifyTitle(String newTitle,int position)throws ODSKartException;
     String getTitle(int position)throws ODSKartException;
     void addTitle(String title);
+    
 }
