@@ -101,11 +101,13 @@ public class ODSKart extends javax.swing.JFrame {
 
         @Override
         public int getColumnCount() {
-            int maxTitles =10;
-          /*  for(Medium medium:media){
-                int count = medium.getTitles().size();
-                if(maxTitles < count)maxTitles = count;
-            }*/
+            int maxTitles = 5;
+            if(media!=null && media.size()>0){
+                for(Medium medium:media){
+                    int count = medium.getTitles().size();
+                    if(maxTitles < count)maxTitles = count;
+                }
+            }
             return maxTitles;
             //return dataManager == null?0:dataManager.getMaxTitlesCount();
         }
@@ -117,7 +119,7 @@ public class ODSKart extends javax.swing.JFrame {
         
         @Override
         public boolean isCellEditable(int row, int column){
-            return true;
+            return row<media.size() && column < media.get(row).getTitles().size();
         }
 
         @Override
@@ -130,7 +132,12 @@ public class ODSKart extends javax.swing.JFrame {
             if(column>titles.size())return "";
             String title="";
             try{
-             title = media.get(row).getTitle(column);
+                if(row<media.size()){
+                    Medium medium = media.get(row);
+                    if(column<medium.getTitles().size())
+                        title = medium.getTitle(column);
+                }
+                
             }catch(ODSKartException ex){
                 System.err.println(ex);
             }

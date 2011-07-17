@@ -125,7 +125,7 @@ public class ODSDBManager implements DBManager {
         Sheet sheet = null;
         for(int i=0;i<database.getSheetCount();i++){
             Sheet tmpSheet = database.getSheet(i);
-            if(type.equals(tmpSheet.getName()))sheet = tmpSheet;
+            if(tmpSheet.getName().equals(type))sheet = tmpSheet;
         }
         return sheet;
     }
