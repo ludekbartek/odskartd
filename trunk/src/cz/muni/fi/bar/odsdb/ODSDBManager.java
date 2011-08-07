@@ -9,12 +9,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import cz.muni.fi.bar.odsdb.entities.Medium;
 import cz.muni.fi.bar.odsdb.entities.MediumImpl;
+import javax.swing.SwingWorker;
 import org.jopendocument.dom.spreadsheet.Sheet;
 import org.jopendocument.dom.spreadsheet.SpreadSheet; 
 
@@ -26,6 +28,70 @@ public class ODSDBManager implements DBManager {
     private SpreadSheet database;
     private File input;
     private static final Logger logger = Logger.getLogger(ODSDBManager.class.getName());
+    
+    private class DBWorker extends SwingWorker<List<Medium>, Void>{
+
+        private WorkerAction action;
+        private String type;
+        private File output;
+        
+        
+        public DBWorker(WorkerAction action){
+            this.action = action;
+        }
+        
+        public DBWorker(WorkerAction action, String type){
+            this(action);
+            this.type = type;
+        }
+        
+        public DBWorker(WorkerAction action,File output){
+            this(action);
+            this.output = output;
+        }
+        
+        @Override
+        protected List<Medium> doInBackground() throws Exception {
+            
+            List<Medium> mediaList = new ArrayList<Medium>();
+            switch(action){
+                case GET:
+                    for(int i=0;i<database.getSheetCount();i++){
+                        Sheet sheet = database.getSheet(i);
+                        if(type.equalsIgnoreCase(sheet.getName())){
+                            for(int row=1;row<sheet.getRowCount();row++){
+                                Medium medium = getMedium(sheet,row);
+                                if(medium!=null){
+                                    mediaList.add(getMedium(sheet,row));
+                                }
+                            }
+                        }
+                        
+                    }
+                    break;
+                case GET_ALL:
+                    Sheet sheet;
+                    int sheetCount = database.getSheetCount();
+                    for(int i=0;i<sheetCount;i++){
+                        sheet = database.getSheet(i);
+                        System.out.println(sheet.getName());
+                        for(int row=1;row<sheet.getRowCount();row++){
+                                Medium medium = getMedium(sheet,row);
+                                if(medium!=null){
+                                    mediaList.add(getMedium(sheet,row));
+                                }
+                                
+                        }
+                    }
+                    break;
+
+                case SAVE:
+                    database.saveAs(output);
+                    break;
+            }
+            return mediaList;
+        }
+    }
     
     public ODSDBManager(String path)throws ODSKartException, FileNotFoundException{
         
@@ -41,21 +107,17 @@ public class ODSDBManager implements DBManager {
     
     @Override
     public List<Medium> getMedia(String type) {
-        Sheet sheet;
-        List<Medium> mediaList= new ArrayList<Medium>();
-        for(int i=0;i<database.getSheetCount();i++){
-            sheet = database.getSheet(i);
-            if(type.equalsIgnoreCase(sheet.getName()))
-            {
-                for(int row=1;row<sheet.getRowCount();row++){
-                    Medium medium = getMedium(sheet,row);
-                    if(medium!=null){
-                        mediaList.add(getMedium(sheet,row));
-                    }
-                }
-            }
+        DBWorker worker = new DBWorker(WorkerAction.GET,type);
+        worker.execute();
+        List<Medium> media = new ArrayList<Medium>();
+        try {
+            media.addAll(worker.get());
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return mediaList;
+        return media;
     }
 
     
@@ -170,13 +232,15 @@ public class ODSDBManager implements DBManager {
 
     @Override
     public void store() {
-        try {
+       /* try {
             database.saveAs(input);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ODSDBManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
+        SwingWorker worker = new DBWorker(WorkerAction.SAVE, input);
+        worker.execute();
     }
 
     @Override
