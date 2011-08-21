@@ -38,6 +38,21 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ODSKart extends javax.swing.JFrame {
 
+    private class AddMediumActionOK extends AbstractAction {
+
+        public AddMediumActionOK(String string) {
+            super(string);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if(jComboBox2.getSelectedIndex()>=0){
+                type = jComboBox2.getSelectedItem().toString();
+                jDialog3.setVisible(false);
+            }
+        }
+    }
+
 
     private class AddMediumAction extends AbstractAction{
 
@@ -50,7 +65,12 @@ public class ODSKart extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent ae) {
             ODSKartTableModel model = (ODSKartTableModel) table.getModel();
-            model.addMedium();
+            if(jComboBox1.getSelectedIndex()==-1){
+                jDialog3.setModal(true);
+                jDialog3.setVisible(true);
+                
+            }
+            videotekModel.addMedium(type);
         }
         
     }
@@ -243,6 +263,11 @@ public class ODSKart extends javax.swing.JFrame {
             media.add(new MediumImpl());
             fireTableRowsInserted(0, media.size());
         }
+        
+        private void addMedium(String type){
+            setType(type);
+            addMedium();
+        }
 
         private void updateView() {
             fireTableCellUpdated(0,media.size());
@@ -263,6 +288,8 @@ public class ODSKart extends javax.swing.JFrame {
     private ComboBoxModel comboBoxModel1;
     private ODSKartTableModel videotekModel;
     private Logger logger;
+    private String type;
+    
     /** Creates new form ODSKart */
     public ODSKart() {
         comboBoxModel1 = (ComboBoxModel) new TypeComboBoxModel();
@@ -298,6 +325,11 @@ public class ODSKart extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jButton5 = new javax.swing.JButton();
+        jDialog3 = new javax.swing.JDialog();
+        jPanel2 = new javax.swing.JPanel();
+        jComboBox2 = new javax.swing.JComboBox();
+        jButton6 = new javax.swing.JButton();
+        jButton7 = new javax.swing.JButton();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
@@ -368,6 +400,35 @@ public class ODSKart extends javax.swing.JFrame {
         jDialog2Layout.setVerticalGroup(
             jDialog2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jComboBox2.setModel(comboBoxModel1);
+        jComboBox2.setAction(new ComboBoxAction());
+        jPanel2.add(jComboBox2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 200, -1));
+
+        jButton6.setAction(new AddMediumActionOK("Ok"));
+        jButton6.setText("Ok");
+        jPanel2.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 10, 90, -1));
+
+        jButton7.setText("Cancel");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 40, 90, -1));
+
+        org.jdesktop.layout.GroupLayout jDialog3Layout = new org.jdesktop.layout.GroupLayout(jDialog3.getContentPane());
+        jDialog3.getContentPane().setLayout(jDialog3Layout);
+        jDialog3Layout.setHorizontalGroup(
+            jDialog3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+        jDialog3Layout.setVerticalGroup(
+            jDialog3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -467,6 +528,10 @@ public class ODSKart extends javax.swing.JFrame {
         jDialog2.setVisible(false);
     }//GEN-LAST:event_jButton5ActionPerformed
 
+private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+    jDialog3.setVisible(false);
+}//GEN-LAST:event_jButton7ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -485,9 +550,13 @@ public class ODSKart extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButton7;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JDialog jDialog1;
     private javax.swing.JDialog jDialog2;
+    private javax.swing.JDialog jDialog3;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -502,6 +571,7 @@ public class ODSKart extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
