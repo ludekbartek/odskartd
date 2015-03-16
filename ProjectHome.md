@@ -1,0 +1,1 @@
+This project will allow user to manage ODF based file of  video media (DVD, VHS, ...).
